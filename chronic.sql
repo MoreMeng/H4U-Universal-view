@@ -1,0 +1,29 @@
+CREATE VIEW [dbo].[h4u_chronic]
+AS
+SELECT DISTINCT ltrim(O.hn) AS hn,
+	D.ICDCode AS icd_code,
+	i.DES AS icd_name,
+	(
+		SELECT MIN(pd.VisitDate - 5430000)
+		FROM PATDIAG pd(NOLOCK)
+		WHERE pd.Hn = D.Hn
+			AND pd.ICDCode = D.ICDCode
+			AND EXISTS (
+				SELECT *
+				FROM PPOP_CHRONIC c
+				WHERE D.ICDCode BETWEEN c.STARTCODE
+						AND c.ENDCODE
+				)
+		) AS start_date,
+	CONVERT(TIME, '00:00') AS time_serve
+FROM OPD_H O(NOLOCK)
+LEFT JOIN PPOP_CON AS ctl ON ctl.CON_KEY = '000'
+INNER JOIN dbo.PATDIAG AS D(NOLOCK) ON O.hn = D.Hn
+	AND O.regNo = D.regNo
+INNER JOIN ICD101 i(NOLOCK) ON i.CODE = D.ICDCode
+WHERE EXISTS (
+		SELECT *
+		FROM PPOP_CHRONIC c
+		WHERE D.ICDCode BETWEEN c.STARTCODE
+				AND c.ENDCODE
+		)
