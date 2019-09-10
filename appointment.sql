@@ -1,3 +1,5 @@
+CREATE VIEW [dbo].[h4u_appointment]
+AS
 SELECT ltrim(o.hn) AS hn,
 	o.regNo AS seq,
 	convert(DATE, convert(CHAR, o.registDate - 5430000)) AS date_serve,
